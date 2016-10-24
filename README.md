@@ -1,1 +1,3 @@
-# headercut
+# 移动端头像裁剪
+项目依赖
+mui框架 jq
