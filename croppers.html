@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cropper</title>
+  <link rel="stylesheet" href="mui.min.css">
+  <!--<link rel="stylesheet" href="bootstrap.min.css">-->
+  <link rel="stylesheet" href="cropper.css">
+  <style>
+    .container {
+      max-width: 960px;
+      margin: 20px auto;
+    }
+
+    .img-container {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .img-container img {
+      width: 100%;
+    }
+    #changeAvatar{
+    	width: 60px;
+    	height: 60px;
+    	
+    	margin: 20px auto;
+    }
+    #changeAvatar img{
+    	width: 100%;
+    	border-radius:50%;
+    }
+    .transformRotate{
+			    -webkit-transform:rotate(-90deg);
+			    transform:rotate(-90deg);
+			    transition-duration:.5s, .5s, .5s;
+			}
+  </style>
+</head>
+<body>
+	<a href="#picture"><div id="changeAvatar"></div></a>
+	<button id="sure" class="mui-btn">确认</button>
+  <div class="container">
+    <!--<h1 class="page-header">Multiple Croppers</h1>-->
+    <div class="row">
+      <div class="col-sm-6">
+        <!--<h3>Cropper</h3>-->
+        <div class="img-container" id="report">
+          <img src="picture.jpg" alt="Picture">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mui-content">
+  	<button class="mui-btn" id="hq">从相册中选择</button>
+  	<button class="mui-btn" id="pz">拍照</button>
+  </div>
+
+  <!-- Scripts -->
+  <script src="mui.min.js"></script>
+  <script src="jquery.min.js"></script>
+  <!--<script src="bootstrap.min.js"></script>-->
+  <script src="cropper.js"></script>
+  <script>
+    $(function () {
+      
+      mui("#hq")[0].addEventListener("tap",function(){
+      	galleryImgs();
+      });
+      mui("#pz")[0].addEventListener('tap',function(){
+      	getImage()
+      })
+      mui("#sure")[0].addEventListener("tap",function(){
+      	confirm();
+      })
+    });
+    	//拍照
+function getImage() {
+    var cmr = plus.camera.getCamera();
+    cmr.captureImage( function (p) {
+        plus.io.resolveLocalFileSystemURL( p, function ( entry ) {    
+            var localurl = entry.toLocalURL();//
+            $("#report").html('<img src="'+localurl+'" data-original="'+localurl+'">');
+             $("#report").addClass("transformRotate")
+            cutImg();
+//          mui('#picture').popover('toggle');
+        });
+    });
+}
+    ////相册选取
+function galleryImgs(){
+    plus.gallery.pick( function(e){
+        $("#report").html('<img src="'+e.files[0]+'" data-original="'+e.files[0]+'">');
+//      $('.img-container > img').cropper();
+        cutImg();
+//      mui('#picture').popover('toggle');
+    }, function ( e ) {
+        //outSet( "取消选择图片" );
+    },{filter:"image",multiple:true});
+}
+//头像裁剪
+function cutImg(){  
+$(".container").fadeIn();
+    var $image = $('#report > img');
+//   $image.cropper();
+    $image.cropper({
+      aspectRatio: 1 / 1,
+      autoCropArea: 0.8
+    });
+} 
+
+//确认头像裁剪
+function confirm(){
+   
+    $(".container").fadeOut();
+    var $image = $('#report > img');
+		var dataURL = convertCanvasToImage($image.cropper("getCroppedCanvas")).src; 
+    console.log(JSON.stringify(dataURL));
+    $("#changeAvatar").html('<img src="'+dataURL+'" data-original="'+dataURL+'" width="100%" />');
+}
+//64位canvas转换
+function convertCanvasToImage(canvas) {
+var image = new Image();
+image.src = canvas.toDataURL("image/jpg");
+return image;
+}
+//头像上传
+function postAvatar() {
+
+    var $image = $('#report > img');
+    var dataURL = $image.cropper("getDataURL");
+    var data = {
+            base64: dataURL
+    };
+    $.post(url,data,function(data){
+        //这里就自己写了哈
+    });
+};
+  </script>
+</body>
+</html>
